@@ -220,7 +220,7 @@ Release Candidate מקומי שעונה על דרישות העיצוב, הנגי
 
 **שער אישור:** יש לעצור ולהציג את ה-Release Candidate ואת תוצאות הנגישות, הדפדפנים וההתקנה. אין להתחיל את Milestone 5 ללא אישור מפורש.
 
-## Milestone 5 - Production והשקה מבוקרת
+## Milestone 5 - Production והשקה מבוקרת ✅
 
 ### שם ומטרה
 
