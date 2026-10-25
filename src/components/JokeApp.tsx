@@ -2,16 +2,13 @@
 
 import { useRef, useState } from "react";
 import { requestJoke } from "@/lib/client/requestJoke";
-import type { JokeErrorCode } from "@/lib/domain/errors";
+import { ERRORS, type JokeErrorCode } from "@/lib/domain/errors";
 import { ERROR_MESSAGES } from "@/lib/ui/messages";
 import JokeForm from "./JokeForm";
 import JokeResult, { type ResultView } from "./JokeResult";
 
 // Errors about the topic are shown under the field; the rest go in the result card.
 const INPUT_ERRORS: JokeErrorCode[] = ["TOPIC_TOO_LONG", "UNSAFE_TOPIC"];
-
-// Until Milestone 3 maps every code, all other card errors share the service message.
-const CARD_ERROR_MESSAGE = ERROR_MESSAGES.INTERNAL_ERROR;
 
 // All state lives in memory only and is gone on refresh.
 export default function JokeApp() {
@@ -44,7 +41,11 @@ export default function JokeApp() {
       setInputError(ERROR_MESSAGES[result.code]);
       setView(previousView);
     } else {
-      setView({ kind: "error", message: CARD_ERROR_MESSAGE });
+      setView({
+        kind: "error",
+        message: ERROR_MESSAGES[result.code],
+        retryable: ERRORS[result.code].retryable,
+      });
     }
 
     setLoading(false);
@@ -60,7 +61,8 @@ export default function JokeApp() {
         loading={loading}
         errorMessage={inputError}
       />
-      <JokeResult view={view} />
+      {/* Retry sends whatever is in the field at that moment (DESIGN.md). */}
+      <JokeResult view={view} onRetry={handleSubmit} />
     </>
   );
 }

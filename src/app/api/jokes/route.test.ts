@@ -1,7 +1,8 @@
 /**
  * @jest-environment node
  */
-import { APIConnectionError, APIError } from "openai";
+import { APIConnectionError, APIConnectionTimeoutError, APIError } from "openai";
+import { ERRORS } from "@/lib/domain/errors";
 import { POST } from "./route";
 
 const FAKE_KEY = "sk-test-not-a-real-key";
@@ -18,14 +19,26 @@ jest.mock("openai", () => {
   return { __esModule: true, ...actual, default: FakeOpenAI };
 });
 
-function post(body: unknown) {
+const SAME_ORIGIN = {
+  "Content-Type": "application/json",
+  Host: "localhost:3000",
+  Origin: "http://localhost:3000",
+};
+
+function post(body: unknown, headers: Record<string, string> = SAME_ORIGIN) {
   return POST(
     new Request("http://localhost:3000/api/jokes", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: typeof body === "string" ? body : JSON.stringify(body),
     }),
   );
+}
+
+function without(name: keyof typeof SAME_ORIGIN) {
+  const headers: Record<string, string> = { ...SAME_ORIGIN };
+  delete headers[name];
+  return headers;
 }
 
 function moderation(flagged: boolean) {
@@ -36,18 +49,27 @@ function aiOutput(parsed: unknown, status = "completed") {
   return { status, output_parsed: parsed };
 }
 
-async function expectError(response: Response, status: number, code: string) {
+// Checks the status and retryable flag against the table in ARCHITECTURE.md 2.5.
+async function expectError(
+  response: Response,
+  status: number,
+  code: keyof typeof ERRORS,
+) {
   expect(response.status).toBe(status);
   expect(response.headers.get("Cache-Control")).toBe("no-store");
+  expect(response.headers.get("Access-Control-Allow-Origin")).toBeNull();
   const body = await response.json();
   expect(body.error.code).toBe(code);
-  expect(typeof body.error.message).toBe("string");
-  expect(typeof body.error.retryable).toBe("boolean");
+  expect(body.error.retryable).toBe(ERRORS[code].retryable);
+  expect(body.error.message).not.toMatch(/<|>|at \w+ \(/);
   return body;
 }
 
+let errorLog: jest.SpyInstance;
+
 beforeEach(() => {
   jest.resetAllMocks();
+  errorLog = jest.spyOn(console, "error").mockImplementation(() => {});
   process.env.OPENAI_API_KEY = FAKE_KEY;
   process.env.OPENAI_MODEL = "test-model";
   mockModerate.mockResolvedValue(moderation(false));
@@ -141,11 +163,51 @@ describe("POST /api/jokes", () => {
     await expectError(await post({ topic: "ים" }), 429, "AI_RATE_LIMITED");
   });
 
-  it("maps connection failures and 5xx to AI_UNAVAILABLE", async () => {
+  it("maps a spend limit 429 to AI_RATE_LIMITED without retrying", async () => {
+    mockParse.mockRejectedValue(
+      new APIError(429, { code: "project_spend_limit_exceeded" }, "Limit", new Headers()),
+    );
+    await expectError(await post({ topic: "ים" }), 429, "AI_RATE_LIMITED");
+    expect(mockParse).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ["connection failures", () => new APIConnectionError({ message: "down" })],
+    ["5xx", () => new APIError(500, {}, "Server error", new Headers())],
+  ])("maps %s to AI_UNAVAILABLE after one retry", async (_, makeError) => {
+    mockParse.mockRejectedValue(makeError());
+    await expectError(await post({ topic: "ים" }), 503, "AI_UNAVAILABLE");
+    expect(mockParse).toHaveBeenCalledTimes(2);
+  });
+
+  it("succeeds when the single retry works", async () => {
     mockParse.mockRejectedValueOnce(new APIConnectionError({ message: "down" }));
+    const response = await post({ topic: "ים" });
+    expect(response.status).toBe(200);
+    expect(mockParse).toHaveBeenCalledTimes(2);
+  });
+
+  it("passes each step its own timeout", async () => {
+    await post({ topic: "ים" });
+    expect(mockModerate.mock.calls[0][1]).toEqual({ timeout: 5000 });
+    expect(mockParse.mock.calls[0][1]).toEqual({ timeout: 10000 });
+    expect(mockModerate.mock.calls[1][1]).toEqual({ timeout: 5000 });
+  });
+
+  it.each([
+    ["input moderation", () => mockModerate.mockRejectedValueOnce(new APIConnectionTimeoutError())],
+    ["generation", () => mockParse.mockRejectedValue(new APIConnectionTimeoutError())],
+    [
+      "output moderation",
+      () =>
+        mockModerate
+          .mockResolvedValueOnce(moderation(false))
+          .mockRejectedValueOnce(new APIConnectionTimeoutError()),
+    ],
+  ])("maps a timeout in %s to AI_UNAVAILABLE without retrying", async (_, arrange) => {
+    arrange();
     await expectError(await post({ topic: "ים" }), 503, "AI_UNAVAILABLE");
-    mockParse.mockRejectedValueOnce(new APIError(500, {}, "Server error", new Headers()));
-    await expectError(await post({ topic: "ים" }), 503, "AI_UNAVAILABLE");
+    expect(mockParse.mock.calls.length).toBeLessThanOrEqual(1);
   });
 
   it("never exposes the API key or provider messages", async () => {
@@ -157,5 +219,69 @@ describe("POST /api/jokes", () => {
     expect(response.status).toBe(500);
     expect(text).not.toContain(FAKE_KEY);
     expect(text).not.toContain("Incorrect API key");
+  });
+
+  it("returns INTERNAL_ERROR for an unexpected failure", async () => {
+    mockParse.mockRejectedValue(new Error("boom at secret place"));
+    const response = await post({ topic: "ים" });
+    const body = await expectError(response, 500, "INTERNAL_ERROR");
+    expect(JSON.stringify(body)).not.toContain("boom");
+  });
+});
+
+describe("POST /api/jokes request protection", () => {
+  it.each([
+    ["a foreign Origin", { ...SAME_ORIGIN, Origin: "https://evil.example" }],
+    ["a missing Origin", without("Origin")],
+    ["a malformed Origin", { ...SAME_ORIGIN, Origin: "not a url" }],
+    ["a missing Content-Type", without("Content-Type")],
+    ["a text/plain Content-Type", { ...SAME_ORIGIN, "Content-Type": "text/plain" }],
+    ["a form Content-Type", { ...SAME_ORIGIN, "Content-Type": "application/x-www-form-urlencoded" }],
+  ])("rejects %s without calling OpenAI", async (_, headers) => {
+    await expectError(await post({ topic: "ים" }, headers), 400, "INVALID_REQUEST");
+    expect(mockModerate).not.toHaveBeenCalled();
+    expect(mockParse).not.toHaveBeenCalled();
+  });
+
+  it("accepts JSON with a charset", async () => {
+    const headers = { ...SAME_ORIGIN, "Content-Type": "application/json; charset=utf-8" };
+    expect((await post({ topic: "ים" }, headers)).status).toBe(200);
+  });
+});
+
+describe("POST /api/jokes logging", () => {
+  it("logs only the code, duration and OpenAI request ID", async () => {
+    const headers = new Headers({ "x-request-id": "req_123" });
+    mockParse.mockRejectedValue(
+      new APIError(429, {}, `Rate limit ${FAKE_KEY}`, headers),
+    );
+    await post({ topic: "נושא סודי" });
+
+    expect(errorLog).toHaveBeenCalledTimes(1);
+    const entry = JSON.parse(errorLog.mock.calls[0][0]);
+    expect(Object.keys(entry).sort()).toEqual(
+      ["code", "durationMs", "event", "openaiRequestId"].sort(),
+    );
+    expect(entry).toMatchObject({ code: "AI_RATE_LIMITED", openaiRequestId: "req_123" });
+  });
+
+  it("never logs the topic, the joke or provider details", async () => {
+    mockModerate
+      .mockResolvedValueOnce(moderation(false))
+      .mockResolvedValueOnce(moderation(true));
+    await post({ topic: "נושא סודי" });
+    mockParse.mockRejectedValue(new Error(`provider said ${FAKE_KEY}`));
+    await post({ topic: "נושא סודי" });
+
+    const logged = JSON.stringify(errorLog.mock.calls);
+    expect(logged).not.toContain("נושא סודי");
+    expect(logged).not.toContain("בדיחה על חתולים");
+    expect(logged).not.toContain(FAKE_KEY);
+    expect(logged).not.toContain("provider said");
+  });
+
+  it("logs nothing for a successful request", async () => {
+    await post({ topic: "ים" });
+    expect(errorLog).not.toHaveBeenCalled();
   });
 });

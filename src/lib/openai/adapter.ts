@@ -1,5 +1,9 @@
 // Single entry point for all OpenAI communication.
-import OpenAI, { APIConnectionError, APIError } from "openai";
+import OpenAI, {
+  APIConnectionError,
+  APIConnectionTimeoutError,
+  APIError,
+} from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { JokeError } from "@/lib/domain/errors";
 import { AiJokeOutputSchema, type AiJokeOutput } from "@/lib/domain/schemas";
@@ -27,45 +31,58 @@ function getModel(): string {
 }
 
 // Converts SDK errors to stable codes so provider details never leave this file.
+// A timeout is final: retrying it could not fit the time budget.
 function mapOpenAIError(error: unknown): JokeError {
   if (error instanceof JokeError) return error;
-  if (error instanceof APIConnectionError) return new JokeError("AI_UNAVAILABLE");
+  if (error instanceof APIConnectionTimeoutError) return new JokeError("AI_UNAVAILABLE");
+  if (error instanceof APIConnectionError) {
+    return new JokeError("AI_UNAVAILABLE", { autoRetry: true });
+  }
   if (error instanceof APIError) {
-    if (error.status === 429) return new JokeError("AI_RATE_LIMITED");
+    const requestId = error.requestID ?? undefined;
+    // Includes project_spend_limit_exceeded (ARCHITECTURE.md, 3.4).
+    if (error.status === 429) return new JokeError("AI_RATE_LIMITED", { requestId });
     if (error.status !== undefined && error.status >= 500) {
-      return new JokeError("AI_UNAVAILABLE");
+      return new JokeError("AI_UNAVAILABLE", { autoRetry: true, requestId });
     }
+    return new JokeError("INTERNAL_ERROR", { requestId });
   }
   return new JokeError("INTERNAL_ERROR");
 }
 
-export async function isFlagged(text: string): Promise<boolean> {
+export async function isFlagged(text: string, timeoutMs: number): Promise<boolean> {
   try {
-    const result = await getClient().moderations.create({
-      model: MODERATION_MODEL,
-      input: text,
-    });
+    const result = await getClient().moderations.create(
+      { model: MODERATION_MODEL, input: text },
+      { timeout: timeoutMs },
+    );
     return result.results.some((r) => r.flagged);
   } catch (error) {
     throw mapOpenAIError(error);
   }
 }
 
-export async function requestJoke(topic: string): Promise<AiJokeOutput> {
+export async function requestJoke(
+  topic: string,
+  timeoutMs: number,
+): Promise<AiJokeOutput> {
   let response;
   try {
-    response = await getClient().responses.parse({
-      model: getModel(),
-      store: false,
-      instructions: JOKE_INSTRUCTIONS,
-      input: buildJokeInput(topic),
-      reasoning: { effort: "none" },
-      text: {
-        format: zodTextFormat(AiJokeOutputSchema, "joke"),
-        verbosity: "low",
+    response = await getClient().responses.parse(
+      {
+        model: getModel(),
+        store: false,
+        instructions: JOKE_INSTRUCTIONS,
+        input: buildJokeInput(topic),
+        reasoning: { effort: "none" },
+        text: {
+          format: zodTextFormat(AiJokeOutputSchema, "joke"),
+          verbosity: "low",
+        },
+        max_output_tokens: MAX_OUTPUT_TOKENS,
       },
-      max_output_tokens: MAX_OUTPUT_TOKENS,
-    });
+      { timeout: timeoutMs },
+    );
   } catch (error) {
     throw mapOpenAIError(error);
   }

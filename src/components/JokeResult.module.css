@@ -60,3 +60,34 @@
   flex-shrink: 0;
   margin-top: 3px;
 }
+
+/* Secondary button from the style guide: light fill, dark outline. */
+.retry {
+  display: block;
+  min-height: 48px;
+  margin-top: 16px;
+  padding: 10px 24px;
+  border: 2px solid var(--deep-cocoa);
+  border-radius: 18px;
+  background: var(--warm-white);
+  color: var(--deep-cocoa);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.retry:hover {
+  background: var(--soft-blush);
+}
+
+.retry:active {
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .retry {
+    transition: none;
+  }
+}

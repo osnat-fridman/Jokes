@@ -686,4 +686,28 @@ Playwright יריץ את הזרימות המרכזיות עם API מדומה:
 
 **החלטה:** לא מגדירים `runtime` ב-`/api/jokes`. ה-Route רץ ב-Node.js Runtime, שהוא ברירת המחדל של Next.js.
 
-**השלכות:** הדרישה ל-Node.js Runtime (סעיפים 2.2 ו-5.3) מתקיימת דרך ברירת המחדל. יש לבדוק ב-Milestone 3 אם גם `maxDuration` נחסם באותו מצב, ואם כן — להגדיר אותו בדרך חלופית (למשל `vercel.json`).
+**השלכות:** הדרישה ל-Node.js Runtime (סעיפים 2.2 ו-5.3) מתקיימת דרך ברירת המחדל. ב-Milestone 3 נבדק ש-`export const maxDuration = 30` מותר יחד עם `cacheComponents` וה-Build עובר, ולכן אין צורך ב-`vercel.json`.
+
+### ADR-3: Origin זר ו-Content-Type שגוי מוחזרים כ-`400 INVALID_REQUEST`
+
+**הקשר:** סעיף 3.2 דורש לדחות Origin זר ו-Content-Type שאינו JSON, אך טבלת השגיאות בסעיף 2.5 אינה כוללת קוד ייעודי לכך.
+
+**החלטה:** Origin זר, Origin חסר או לא תקין, ו-Content-Type שאינו `application/json` מחזירים `400 INVALID_REQUEST` (`retryable: false`), לפני קריאת ה-Body ובלי פנייה ל-OpenAI. ההשוואה היא בין ה-Host שבכותרת `Origin` ל-Host של הבקשה. לא נשלחות כותרות CORS.
+
+**השלכות:** כל קוד נשאר בסטטוס שנקבע לו, וה-Frontend אינו צריך מצב חדש. סקריפט שמזייף את הכותרות עדיין יכול לפנות ל-API; ההגנה מפניו היא ה-Rate Limit ותקרת ההוצאות.
+
+### ADR-4: Content-Security-Policy עם `'unsafe-inline'`
+
+**הקשר:** Next.js מזריק סקריפטים Inline לצורך Hydration. CSP מחמיר מחייב Nonce לכל בקשה, ולכן רינדור דינמי של כל דף ו-Proxy נוסף.
+
+**החלטה:** ה-Security Headers מוגדרים ב-`next.config.ts` לכל הנתיבים. ה-CSP מתיר `'self'` ו-`'unsafe-inline'` לסקריפטים ולסגנונות, ו-`'unsafe-eval'` רק ב-Development (נדרש ל-Hot Reload). בנוסף: `frame-ancestors 'none'`, ‏`object-src 'none'`, ‏`connect-src 'self'`, ‏`X-Content-Type-Options: nosniff`, ‏`Referrer-Policy: strict-origin-when-cross-origin` ו-`Permissions-Policy` שחוסם מצלמה, מיקרופון, מיקום, תשלום ו-USB.
+
+**השלכות:** ההגנה מפני הזרקת סקריפט חלשה יותר מ-Nonce, אך הסיכון נמוך: הבדיחה מוצגת כטקסט בלבד ואין HTML ממקור חיצוני. אם יידרש CSP מחמיר בעתיד, יש לעבור ל-Nonce.
+
+### ADR-5: היקף ה-Retry האוטומטי בשרת
+
+**הקשר:** סעיף 2.7 מתיר Retry יחיד לשגיאת רשת או 5xx, אם נשארו לפחות 12 שניות. ADR-1 דחה את מימושו ל-Milestone 3.
+
+**החלטה:** ה-Retry חל רק על שלב יצירת הבדיחה, פעם אחת, על שגיאת חיבור או 5xx. אין Retry על Timeout, ‏429, Moderation או Validation. לכל שלב יש Timeout משלו (5/10/5 שניות), שלעולם אינו גדול מהזמן שנשאר מתוך 30 השניות של הבקשה. כשלא נשאר זמן, מוחזר `AI_UNAVAILABLE` בלי לפנות ל-OpenAI.
+
+**השלכות:** Timeout אינו חוזר על עצמו, כי ניסיון נוסף לא היה נכנס בתקציב. תקלה בשלב ה-Moderation מוצגת מיד, והמשתמש יכול ללחוץ "נסו שוב".

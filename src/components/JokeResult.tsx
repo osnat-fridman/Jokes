@@ -7,9 +7,14 @@ export type ResultView =
   | { kind: "placeholder" }
   | { kind: "loading" }
   | { kind: "joke"; joke: string }
-  | { kind: "error"; message: string };
+  | { kind: "error"; message: string; retryable: boolean };
 
-export default function JokeResult({ view }: { view: ResultView }) {
+type Props = {
+  view: ResultView;
+  onRetry: () => void;
+};
+
+export default function JokeResult({ view, onRetry }: Props) {
   return (
     <section className={styles.section} aria-labelledby="result-title">
       <h2 id="result-title" className={styles.title}>
@@ -32,6 +37,12 @@ export default function JokeResult({ view }: { view: ResultView }) {
             </p>
           )}
         </div>
+        {/* Outside the live region so only the message is announced. */}
+        {view.kind === "error" && view.retryable && (
+          <button type="button" className={styles.retry} onClick={onRetry}>
+            נסו שוב
+          </button>
+        )}
       </div>
     </section>
   );

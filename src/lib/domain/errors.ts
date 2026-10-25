@@ -32,12 +32,24 @@ export const ERROR_CODES = Object.keys(ERRORS) as [
   ...JokeErrorCode[],
 ];
 
+// Server-only details; never part of the API response.
+type JokeErrorOptions = {
+  // A connection failure or 5xx that the server may retry once (ARCHITECTURE.md, 2.7).
+  autoRetry?: boolean;
+  // OpenAI request ID, used only in the operational log.
+  requestId?: string;
+};
+
 export class JokeError extends Error {
   readonly code: JokeErrorCode;
+  readonly autoRetry: boolean;
+  readonly requestId?: string;
 
-  constructor(code: JokeErrorCode) {
+  constructor(code: JokeErrorCode, options: JokeErrorOptions = {}) {
     super(code);
     this.name = "JokeError";
     this.code = code;
+    this.autoRetry = options.autoRetry ?? false;
+    this.requestId = options.requestId;
   }
 }
