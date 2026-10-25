@@ -1,4 +1,4 @@
-// Topic rules shared by the client and (from Milestone 2) the server.
+// Topic rules shared by the client and the server.
 // Length is measured in grapheme clusters, so an emoji counts as one character.
 
 export const MAX_TOPIC_LENGTH = 50;
@@ -19,4 +19,12 @@ export function clampToMaxGraphemes(
 ): string {
   const parts = graphemes(text);
   return parts.length <= max ? text : parts.slice(0, max).join("");
+}
+
+export function normalizeTopic(raw: string): string {
+  return raw.normalize("NFC").trim();
+}
+
+export function isTopicTooLong(topic: string): boolean {
+  return countGraphemes(topic) > MAX_TOPIC_LENGTH;
 }

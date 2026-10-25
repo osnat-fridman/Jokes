@@ -1,5 +1,4 @@
-import JokeForm from "@/components/JokeForm";
-import JokeResult from "@/components/JokeResult";
+import JokeApp from "@/components/JokeApp";
 import styles from "./page.module.css";
 
 export default function Home() {
@@ -29,11 +28,7 @@ export default function Home() {
           </svg>
         </header>
 
-        <JokeForm />
-
-        <div className={styles.result}>
-          <JokeResult />
-        </div>
+        <JokeApp />
 
         {/* eslint-disable-next-line @next/next/no-img-element -- pre-optimized static WebP */}
         <img

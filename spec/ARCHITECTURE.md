@@ -669,3 +669,21 @@ Playwright יריץ את הזרימות המרכזיות עם API מדומה:
 - [Node.js - Supported Releases](https://nodejs.org/en/about/previous-releases)
 - [W3C - WCAG 2.2](https://www.w3.org/TR/WCAG22/)
 
+
+## החלטות מרכזיות (ADRs)
+
+### ADR-1: ביטול ה-Retry האוטומטי של OpenAI SDK
+
+**הקשר:** ה-SDK הרשמי של OpenAI מבצע כברירת מחדל שני ניסיונות חוזרים, גם על שגיאת 429. סעיף 2.7 קובע שאין Retry עבור 429, ושב-Backend מותר לכל היותר Retry יחיד ומבוקר לשגיאת רשת או 5xx.
+
+**החלטה:** ה-Client נוצר עם `maxRetries: 0`. ה-Retry היחיד והמבוקר, יחד עם תקציב הזמנים, ייבנה ב-Milestone 3 בתוך ה-Adapter.
+
+**השלכות:** עד Milestone 3 כל תקלה זמנית מוצגת מיד כשגיאה. ההתנהגות צפויה ועקבית עם ה-Architecture, ואין חיוב כפול על ניסיונות נסתרים.
+
+### ADR-2: ללא הגדרת `runtime` ב-Route Handler
+
+**הקשר:** הפרויקט מפעיל `cacheComponents` ב-`next.config.ts`. במצב זה Next.js 16 אוסר על הגדרת `export const runtime` ב-Route Handler, וה-Build נכשל.
+
+**החלטה:** לא מגדירים `runtime` ב-`/api/jokes`. ה-Route רץ ב-Node.js Runtime, שהוא ברירת המחדל של Next.js.
+
+**השלכות:** הדרישה ל-Node.js Runtime (סעיפים 2.2 ו-5.3) מתקיימת דרך ברירת המחדל. יש לבדוק ב-Milestone 3 אם גם `maxDuration` נחסם באותו מצב, ואם כן — להגדיר אותו בדרך חלופית (למשל `vercel.json`).

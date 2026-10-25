@@ -31,8 +31,38 @@
   border-color: var(--deep-cocoa);
 }
 
-.counter {
+.inputError,
+.inputError:focus-visible {
+  border-color: var(--berry-red);
+}
+
+/* Error on the right, counter on the left, as in the mockup. */
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
   margin-top: 8px;
+}
+
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--berry-red);
+  text-align: right;
+}
+
+.errorIcon {
+  flex-shrink: 0;
+}
+
+.counter {
+  margin-inline-start: auto;
+  flex-shrink: 0;
   font-size: 14px;
   line-height: 20px;
   font-weight: 600;

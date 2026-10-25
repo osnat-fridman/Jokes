@@ -2,6 +2,8 @@ import {
   MAX_TOPIC_LENGTH,
   clampToMaxGraphemes,
   countGraphemes,
+  isTopicTooLong,
+  normalizeTopic,
 } from "./topic";
 
 describe("countGraphemes", () => {
@@ -39,5 +41,33 @@ describe("clampToMaxGraphemes", () => {
     const clamped = clampToMaxGraphemes(text);
     expect(clamped).toBe("א".repeat(49) + "👨‍👩‍👧");
     expect(countGraphemes(clamped)).toBe(50);
+  });
+});
+
+describe("normalizeTopic", () => {
+  it("trims spaces at both ends but keeps inner spaces", () => {
+    expect(normalizeTopic("  יום שני  ")).toBe("יום שני");
+  });
+
+  it("turns a topic of only spaces into an empty topic", () => {
+    expect(normalizeTopic("   ")).toBe("");
+  });
+
+  it("normalizes to NFC", () => {
+    expect(normalizeTopic("é")).toBe("é");
+  });
+});
+
+describe("isTopicTooLong", () => {
+  it("allows exactly 50 characters, including emoji", () => {
+    expect(isTopicTooLong("א".repeat(49) + "👨‍👩‍👧")).toBe(false);
+  });
+
+  it("rejects 51 characters", () => {
+    expect(isTopicTooLong("א".repeat(51))).toBe(true);
+  });
+
+  it("allows an empty topic", () => {
+    expect(isTopicTooLong("")).toBe(false);
   });
 });
