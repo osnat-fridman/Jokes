@@ -388,7 +388,7 @@ Cache-Control: no-store
 - `lang="he"` ו-`dir="rtl"` ברמת מסמך ה-HTML.
 - `start_url: "/"`.
 - `display: "standalone"`.
-- `theme_color` ו-`background_color` בהתאם לעיצוב המאושר בהמשך.
+- `theme_color` ו-`background_color` לפי סעיף "סמל האפליקציה (PWA)" ב-`DESIGN.md`.
 - אייקונים תקינים בגדלים הנדרשים, לרבות 192x192 ו-512x512.
 - HTTPS המסופק אוטומטית ב-Vercel.
 
@@ -404,13 +404,13 @@ Cache-Control: no-store
 
 | משתנה | Development מקומי | Vercel Preview | Vercel Production |
 |---|---|---|---|
-| `OPENAI_API_KEY` | מפתח של OpenAI Project לפיתוח בתוך `.env.local` | לא בשימוש (ראו 5.3) | מפתח Production נפרד |
+| `OPENAI_API_KEY` | מפתח של OpenAI Project לפיתוח בתוך `.env` | לא בשימוש (ראו 5.3) | מפתח Production נפרד |
 | `OPENAI_MODEL` | `gpt-5.6-terra` | לא בשימוש | `gpt-5.6-terra` |
 | `APP_ORIGIN` | כתובת Localhost מאושרת | לא בשימוש | הדומיין הציבורי |
 
 כללים:
 
-- `.env.local` ייכלל ב-`.gitignore`.
+- `.env` ייכלל ב-`.gitignore`.
 - אין להשתמש בקידומת `NEXT_PUBLIC_` עבור Secret כלשהו.
 - מפתח Production יוגדר רק ב-Vercel Production Environment.
 - Preview Deployments לא יקבלו את מפתח Production.
@@ -525,7 +525,7 @@ CI משמש כבדיקה נוספת לאחר הדחיפה ואינו חוסם א
 
 - הרצה מקומית באמצעות `npm run dev`.
 - שימוש ב-OpenAI Development Project ובמפתח Development בלבד.
-- Secrets נשמרים ב-`.env.local` שאינו נשלח ל-GitHub.
+- Secrets נשמרים ב-`.env` שאינו נשלח ל-GitHub.
 
 #### Preview
 
