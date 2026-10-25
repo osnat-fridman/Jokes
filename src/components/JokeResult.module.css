@@ -1,0 +1,41 @@
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  text-align: right;
+  margin-bottom: 16px;
+}
+
+.card {
+  position: relative;
+  min-height: 200px;
+  /* Extra space on the left keeps text clear of the smile icon. */
+  padding: 24px 24px 24px 72px;
+  border: 2px solid var(--warm-mauve);
+  border-radius: 20px;
+  background: var(--warm-cream);
+  box-shadow: 0 4px 12px rgba(58, 48, 52, 0.08);
+}
+
+.icon {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+}
+
+.joke,
+.placeholder {
+  font-size: 16px;
+  line-height: 26px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.placeholder {
+  color: var(--cocoa-muted);
+}

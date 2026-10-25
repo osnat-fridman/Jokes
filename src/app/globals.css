@@ -1,0 +1,51 @@
+/* Color palette from DESIGN.md. Dark mode is intentionally not supported. */
+:root {
+  --laugh-pink: #f47fa8;
+  --warm-mauve: #987d84;
+  --deep-cocoa: #3a3034;
+  --warm-cream: #f8eee8;
+  --soft-blush: #fad9e5;
+  --warm-white: #fffdfb;
+  --berry-red: #b3264b;
+  --cocoa-muted: #6e5a60;
+
+  --focus-ring: 3px solid var(--deep-cocoa);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--warm-white);
+  color: var(--deep-cocoa);
+  font-size: 16px;
+  line-height: 26px;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
