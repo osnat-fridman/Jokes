@@ -73,9 +73,29 @@ describe("JokeForm", () => {
     expect(onSubmit).toHaveBeenCalledTimes(2);
   });
 
-  it("disables the button while loading", () => {
-    render(<Harness loading />);
-    expect(screen.getByRole("button")).toBeDisabled();
+  it("puts the error message inside a live region that is always present", () => {
+    const { rerender } = render(<Harness />);
+    const field = screen.getByRole("textbox");
+    const liveRegion = document.querySelector('[aria-live="polite"]');
+    expect(liveRegion).toBeInTheDocument();
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    rerender(<Harness errorMessage="הודעה" />);
+    expect(liveRegion).toHaveTextContent("הודעה");
+    expect(field).not.toHaveFocus();
+  });
+
+  it("disables the button while loading but keeps it focusable", async () => {
+    const user = userEvent.setup();
+    const onSubmit = jest.fn();
+    render(<Harness loading onSubmit={onSubmit} />);
+    const button = screen.getByRole("button");
+    expect(button).toHaveAttribute("aria-disabled", "true");
+    button.focus();
+    expect(button).toHaveFocus();
+    await user.click(button);
+    await user.type(screen.getByRole("textbox"), "{Enter}");
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 
   it("links an error message to the field", () => {

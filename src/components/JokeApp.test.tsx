@@ -70,7 +70,7 @@ describe("JokeApp", () => {
     await user.type(input, "ים");
     await user.click(button);
     expect(screen.getByText("רגע, הבדיחה בדרך...")).toBeInTheDocument();
-    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("aria-disabled", "true");
 
     await user.click(button);
     await user.type(input, "{Enter}");
@@ -178,6 +178,32 @@ describe("JokeApp", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(sentTopic(1)).toBe("ים!");
     expect(screen.queryByRole("button", { name: "נסו שוב" })).not.toBeInTheDocument();
+  });
+
+  it("keeps focus in the result section after retry", async () => {
+    fetchMock
+      .mockReturnValueOnce(jsonResponse(errorBody("AI_UNAVAILABLE"), 503))
+      .mockReturnValueOnce(jsonResponse({ joke: "בדיחה שנייה" }));
+    const { user, button } = setup();
+    await user.click(button);
+    const retry = await screen.findByRole("button", { name: "נסו שוב" });
+    retry.focus();
+    await user.keyboard("{Enter}");
+    expect(await screen.findByText("בדיחה שנייה")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "הבדיחה שלכם" })).toHaveFocus();
+  });
+
+  it("does not move focus when a joke or an error arrives", async () => {
+    fetchMock
+      .mockReturnValueOnce(jsonResponse({ joke: "בדיחה" }))
+      .mockReturnValueOnce(jsonResponse(errorBody("AI_UNAVAILABLE"), 503));
+    const { user, input } = setup();
+    await user.type(input, "ים{Enter}");
+    expect(await screen.findByText("בדיחה")).toBeInTheDocument();
+    expect(input).toHaveFocus();
+    await user.keyboard("{Enter}");
+    expect(await screen.findByText(GENERIC)).toBeInTheDocument();
+    expect(input).toHaveFocus();
   });
 
   it("sends a single request for a fast double click on retry", async () => {

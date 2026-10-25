@@ -79,13 +79,28 @@ test("sends only one request while a joke is loading", async ({ page }) => {
   await input.fill("ים");
   await create.click();
   await expect(page.getByText("רגע, הבדיחה בדרך...")).toBeVisible();
-  await expect(create).toBeDisabled();
+  await expect(create).toHaveAttribute("aria-disabled", "true");
   await create.click({ force: true });
   await input.press("Enter");
 
   release();
   await expect(page.getByText("בדיחה אחת")).toBeVisible();
   expect(calls).toBe(1);
+});
+
+test("identical requests are never answered from a cache", async ({ page }) => {
+  let calls = 0;
+  await page.route("**/api/jokes", (route) => {
+    calls += 1;
+    return fulfillJson(route, { joke: `בדיחה ${calls}` });
+  });
+  const { input, create } = elements(page);
+  await input.fill("ים");
+  await create.click();
+  await expect(page.getByText("בדיחה 1")).toBeVisible();
+  await create.click();
+  await expect(page.getByText("בדיחה 2")).toBeVisible();
+  expect(calls).toBe(2);
 });
 
 test("shows a clear error offline and recovers with retry", async ({ page, context }) => {

@@ -64,21 +64,17 @@
 .raccoon {
   position: relative;
   display: block;
-  width: 150px;
+  width: 46%;
+  max-width: 200px;
   height: auto;
-  /* Touches the card's bottom edge and sits right of center, as in the mockup. */
+  /* Touches the card's bottom edge, lined up with its right side, as in the mockup. */
   margin-top: -8px;
-  margin-inline-start: 22%;
 }
 
 /* Side margins grow with the phone width to match the mockup's proportions. */
 @media (min-width: 360px) {
   .main {
     padding: 48px 32px 16px;
-  }
-
-  .raccoon {
-    width: 170px;
   }
 }
 

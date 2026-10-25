@@ -45,6 +45,12 @@
   margin-top: 8px;
 }
 
+/* Fills the right side so the counter always sits on the left. */
+.errorSlot {
+  flex: 1;
+  min-width: 0;
+}
+
 .error {
   display: flex;
   align-items: flex-start;
@@ -61,7 +67,6 @@
 }
 
 .counter {
-  margin-inline-start: auto;
   flex-shrink: 0;
   font-size: 14px;
   line-height: 20px;
@@ -90,8 +95,9 @@
     background-color 120ms ease;
 }
 
+/* Lighter, not darker, so dark text keeps at least 4.5:1 contrast. */
 .button:hover {
-  background: #f06e9c;
+  background: #f690b4;
 }
 
 .button:active {
@@ -99,7 +105,7 @@
   box-shadow: 0 3px 8px rgba(58, 48, 52, 0.16);
 }
 
-.button:disabled {
+.button[aria-disabled="true"] {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;

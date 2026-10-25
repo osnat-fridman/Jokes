@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Rubik } from "next/font/google";
+import { APP_DESCRIPTION, APP_NAME } from "@/lib/ui/appInfo";
 import "./globals.css";
 
 // Self-hosted at build time by next/font, so browsers never contact Google.
@@ -10,8 +11,16 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
-  title: "רגע של צחוק",
-  description: "כתבו נושא וקבלו בדיחה קצרה ונקייה בעברית.",
+  title: APP_NAME,
+  description: APP_DESCRIPTION,
+  applicationName: APP_NAME,
+  // Lets iPhone open the home-screen app standalone, under the Hebrew name.
+  appleWebApp: { capable: true, title: APP_NAME, statusBarStyle: "default" },
+};
+
+// Zoom is never locked, so users can enlarge text.
+export const viewport: Viewport = {
+  themeColor: "#F47FA8",
 };
 
 export default function RootLayout({

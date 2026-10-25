@@ -30,7 +30,7 @@ export default function JokeForm({
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault();
-        onSubmit();
+        if (!loading) onSubmit();
       }}
     >
       <label htmlFor="topic" className={styles.label}>
@@ -50,17 +50,22 @@ export default function JokeForm({
         onChange={(event) => onTopicChange(clampToMaxGraphemes(event.target.value))}
       />
       <div className={styles.meta}>
-        {errorMessage && (
-          <p id="topic-error" className={styles.error}>
-            <WarningIcon className={styles.errorIcon} />
-            <span>{errorMessage}</span>
-          </p>
-        )}
+        {/* Always in the DOM so screen readers announce a new message. */}
+        <div className={styles.errorSlot} aria-live="polite">
+          {errorMessage && (
+            <p id="topic-error" className={styles.error}>
+              <WarningIcon className={styles.errorIcon} />
+              <span>{errorMessage}</span>
+            </p>
+          )}
+        </div>
         <p id="topic-counter" className={styles.counter} dir="ltr">
           {countGraphemes(topic)}/{MAX_TOPIC_LENGTH}
         </p>
       </div>
-      <button type="submit" className={styles.button} disabled={loading}>
+      {/* aria-disabled instead of disabled: a disabled button drops keyboard
+          focus to the page start, so the user would lose their place. */}
+      <button type="submit" className={styles.button} aria-disabled={loading}>
         צרו לי בדיחה
       </button>
     </form>

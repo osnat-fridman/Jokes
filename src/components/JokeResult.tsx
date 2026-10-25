@@ -1,3 +1,6 @@
+"use client";
+
+import { useRef } from "react";
 import { LOADING_MESSAGE, RESULT_PLACEHOLDER } from "@/lib/ui/messages";
 import SmileIcon from "./SmileIcon";
 import WarningIcon from "./WarningIcon";
@@ -15,9 +18,18 @@ type Props = {
 };
 
 export default function JokeResult({ view, onRetry }: Props) {
+  const titleRef = useRef<HTMLHeadingElement>(null);
+
+  function handleRetry() {
+    // The retry button disappears while loading; keep focus in this section
+    // instead of letting it fall back to the top of the page.
+    titleRef.current?.focus();
+    onRetry();
+  }
+
   return (
     <section className={styles.section} aria-labelledby="result-title">
-      <h2 id="result-title" className={styles.title}>
+      <h2 id="result-title" className={styles.title} ref={titleRef} tabIndex={-1}>
         הבדיחה שלכם
       </h2>
       <div className={styles.card}>
@@ -39,7 +51,7 @@ export default function JokeResult({ view, onRetry }: Props) {
         </div>
         {/* Outside the live region so only the message is announced. */}
         {view.kind === "error" && view.retryable && (
-          <button type="button" className={styles.retry} onClick={onRetry}>
+          <button type="button" className={styles.retry} onClick={handleRetry}>
             נסו שוב
           </button>
         )}

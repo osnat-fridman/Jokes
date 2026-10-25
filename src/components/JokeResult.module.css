@@ -15,18 +15,17 @@
 .card {
   position: relative;
   min-height: 200px;
-  /* Extra space on the left keeps text clear of the smile icon. */
-  padding: 24px 24px 24px 72px;
+  padding: 20px 24px 24px;
   border: 2px solid var(--warm-mauve);
   border-radius: 20px;
   background: var(--warm-cream);
   box-shadow: 0 4px 12px rgba(58, 48, 52, 0.08);
 }
 
+/* Top-right corner with the text below it, as in the mockup. */
 .icon {
-  position: absolute;
-  top: 16px;
-  left: 16px;
+  display: block;
+  margin-bottom: 12px;
 }
 
 .joke,
