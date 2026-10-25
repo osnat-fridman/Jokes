@@ -8,7 +8,7 @@
 
 1. אין לסמן Milestone כבנוי (🟡) אם תנאי מהותי ב-Definition of Done לא עבר. יש לתקן ולבדוק שוב, או לעצור ולהסביר בשפה פשוטה מה חוסם.
 2. אין להוסיף פיצ'רים, שירותים, איסוף נתונים או שינויי עיצוב שאינם מוגדרים במסמכי הפרויקט.
-3. יש לשמור לאורך כל הפיתוח על Secrets מחוץ ל-Git, על היעדר שמירת תוכן משתמש ועל הפרדה בין Development ל-Production.
+3. יש לשמור לאורך כל הפיתוח על Secrets מחוץ ל-Git, על היעדר שמירת תוכן משתמש ועל שמירת המפתח רק ב-`.env` המקומי וב-Vercel.
 4. סעיפים המסומנים ב-👤 **בדיקת משתמש** הם בדיקות או הגדרות שרק המשתמש יכול לבצע, למשל בטלפון אמיתי, עם קורא מסך או בחשבונות OpenAI ו-Vercel. ה-AI לא מבצע אותם. במקום זה הוא מכין למשתמש רשימת צעדים פשוטה, צעד אחר צעד, ומחכה לתשובה. סעיף כזה נחשב מבוצע כשהמשתמש מדווח שבדק, או כשהוא מאשר את ה-Milestone.
 
 ## סדר אבני הדרך והתלויות
@@ -75,7 +75,7 @@
 
 ### מה יש לממש
 
-- הדרכה צעד אחר צעד למשתמש ליצירת OpenAI Project נפרד ל-Development ולהפקת Development API Key.
+- הדרכה צעד אחר צעד למשתמש ליצירת OpenAI Project ייעודי לאפליקציה, להפקת API Key ולהגדרת תקרת הוצאות. אותו Project ומפתח ישמשו גם ב-Production.
 - שמירת `OPENAI_API_KEY` ב-`.env` בלבד והגדרת `OPENAI_MODEL` ללא חשיפתם ל-Frontend.
 - מימוש `POST /api/jokes` כ-Next.js Route Handler ב-Node.js Runtime.
 - הגדרת `JokeRequest`, ‏`JokeSuccessResponse` ו-`JokeErrorResponse` באמצעות Zod.
@@ -102,7 +102,7 @@ Vertical Slice עובד בסביבת Development: המשתמש יכול ליצו
 
 ### Definition of Done
 
-- יצירת בדיחה עם נושא תקין עובדת מקצה לקצה מול OpenAI Development Project.
+- יצירת בדיחה עם נושא תקין עובדת מקצה לקצה מול OpenAI.
 - יצירת בדיחה עם שדה ריק עובדת ומחזירה בדיחה כללית.
 - נושא ארוך מ-50 Grapheme Clusters נחסם לפני הקריאה ל-AI.
 - נושא שנחסם ב-Input Moderation אינו נשלח ל-Responses API.
@@ -115,7 +115,7 @@ Vertical Slice עובד בסביבת Development: המשתמש יכול ליצו
 - לא נשמרים נושא או בדיחה ב-Local Storage, ‏Session Storage, ‏Cookies, ‏Cache או Database.
 - תשובת API מוצלחת כוללת `Cache-Control: no-store`.
 - Unit, ‏Component ו-API Integration Tests של הזרימות לעיל עוברים.
-- בוצעו Smoke Tests ידניים מצומצמים מול OpenAI Development, ללא שמירת התוכן בלוגים או ב-Test Artifacts.
+- בוצעו Smoke Tests ידניים מצומצמים מול OpenAI, ללא שמירת התוכן בלוגים או ב-Test Artifacts.
 
 **שער אישור:** יש לעצור ולהדגים יצירה עם נושא, יצירה ללא נושא וחסימת תוכן. אין להתחיל את Milestone 3 ללא אישור מפורש.
 
@@ -133,7 +133,7 @@ Vertical Slice עובד בסביבת Development: המשתמש יכול ליצו
 - הצגת "נסו שוב" רק כאשר `retryable: true`.
 - ניסיון חוזר ידני עם אותה בקשה, ללא Retry אינסופי ב-Frontend.
 - אם ממומש Retry אוטומטי ב-Backend, הוא יוגבל לניסיון יחיד ורק עבור שגיאת רשת או שגיאת 5xx זמנית, בהתאם ל-Architecture.
-- Timeout קצר ומפורש לקריאת AI.
+- זמני המתנה לפי טבלת "תקציב זמנים" ב-`ARCHITECTURE.md`, בשרת ובדפדפן.
 - טיפול מלא בקודים:
   - `INVALID_REQUEST`.
   - `TOPIC_TOO_LONG`.
@@ -196,7 +196,7 @@ Vertical Slice עובד בסביבת Development: המשתמש יכול ליצו
 - התאמה חזותית מלאה ל-Mockup ול-`DESIGN.md` במובייל, Tablet ו-Desktop.
 - שמירת תוכן ארוך בכרטיס גמיש וגלילה אנכית תקינה.
 - השלמת GitHub Actions עבור Lint, ‏Type Check, ‏Unit, ‏Component, ‏API Integration, ‏E2E ו-Production Build.
-- הרצת Playwright ב-Chromium, ‏WebKit ו-Firefox, כולל תצוגות Mobile ו-Desktop.
+- הרצת Playwright ב-Chromium, כולל תצוגות Mobile ו-Desktop.
 - 👤 **בדיקת משתמש:** בדיקה עם VoiceOver ב-Safari ועם קורא מסך בדפדפן Chromium, לפי רשימת צעדים שה-AI יכין.
 - 👤 **בדיקת משתמש:** התקנה ופתיחה ב-Standalone על iPhone ועל Android, לפי רשימת צעדים שה-AI יכין.
 
@@ -215,7 +215,7 @@ Release Candidate מקומי שעונה על דרישות העיצוב, הנגי
 - אין גלישה אופקית החל מרוחב 320px, והפריסה תקינה ב-Mobile, ‏Tablet ו-Desktop.
 - התצוגה תואמת ל-Mockup המאושר: מבנה, צבעים, Typography, Spacing, כרטיס התוצאה ודמות הדביבון.
 - כל בדיקות CI עוברות ללא שימוש ב-OpenAI API Key אמיתי.
-- Playwright עובר ב-Chromium, ‏WebKit ו-Firefox עבור כל הזרימות המרכזיות.
+- Playwright עובר ב-Chromium עבור כל הזרימות המרכזיות.
 - 👤 **בדיקת משתמש:** המשתמש דיווח על תוצאות הבדיקות עם קוראי מסך ועם מכשירי Mobile.
 
 **שער אישור:** יש לעצור ולהציג את ה-Release Candidate ואת תוצאות הנגישות, הדפדפנים וההתקנה. אין להתחיל את Milestone 5 ללא אישור מפורש.
@@ -233,12 +233,11 @@ Release Candidate מקומי שעונה על דרישות העיצוב, הנגי
 - חיבור ה-GitHub Repository ל-Vercel והגדרת Deployment אוטומטי.
 - הגדרת Node.js 24 LTS וסביבת ההרצה שנקבעה ב-Architecture.
 - הדרכה צעד אחר צעד למשתמש להגדרת:
-  - OpenAI Project ו-API Key נפרדים ל-Production.
+  - הגדרת אותו OpenAI API Key שמשמש בפיתוח.
   - `OPENAI_API_KEY` ו-`OPENAI_MODEL` ב-Vercel Production בלבד.
   - OpenAI Hard Spend Limit והתראות ב-50%, ‏80% ו-100%, בסכום שיאושר על ידי המשתמש.
-  - Vercel Spend Management והתראות שימוש.
-- הגדרת הדומיין הציבורי ו-`APP_ORIGIN` הנדרש.
-- הפעלת Vercel Bot Protection על `/api/jokes` במצב Challenge ובדיקה שאינו פוגע בנגישות או בשימוש לגיטימי.
+- הגדרת הכתובת הציבורית.
+- 👤 **בדיקת משתמש:** הגדרת כלל Rate Limit ב-Vercel Firewall (20 בקשות בדקה לכל IP על `POST /api/jokes`), לפי הדרכה צעד אחר צעד.
 - שמירת Vercel DDoS Protection פעילה.
 - Push ל-`main`, לאחר אישור המשתמש, מפעיל Production Deployment אוטומטי.
 - Smoke Tests מצומצמים ב-Production עבור נושא תקין, נושא ריק, שגיאה ניתנת לניסיון חוזר והתקנת PWA.
@@ -252,16 +251,16 @@ Release Candidate מקומי שעונה על דרישות העיצוב, הנגי
 ### Definition of Done
 
 - בדיקות CI עוברות לאחר ה-Push ל-`main`.
-- Production משתמש ב-OpenAI Project וב-Key נפרדים ואינו חושף אותם לדפדפן או ל-Repository.
+- המפתח מוגדר ב-Vercel ואינו נחשף לדפדפן או ל-Repository.
 - Push מאושר ל-`main` מפעיל Production Deployment אוטומטי ללא שלב פריסה ידני.
-- הדומיין הציבורי פועל ב-HTTPS והאפליקציה נטענת בעברית וב-RTL.
+- כתובת ה-`vercel.app` פועלת ב-HTTPS והאפליקציה נטענת בעברית וב-RTL.
 - יצירת בדיחה בנושא ויצירת בדיחה כללית עובדות ב-Production.
 - טיפול בשגיאות, "נסו שוב", Moderation ומניעת שליחה כפולה עובדים ב-Production.
-- 👤 **בדיקת משתמש:** Hard Spend Limit והתראות OpenAI הוגדרו בסכום שאושר, והתראות Vercel פעילות.
-- Bot Protection ו-DDoS Protection פעילים ונבדקו ללא פגיעה מהותית בנגישות או במשתמשים לגיטימיים.
+- 👤 **בדיקת משתמש:** Hard Spend Limit והתראות OpenAI הוגדרו בסכום שאושר.
+- כלל ה-Rate Limit ו-DDoS Protection פעילים. בקשה ה-21 בדקה מקבלת 429, והממשק מציג את הודעת השירות הכללית.
 - Vercel Web Analytics ו-Speed Insights אינם פעילים.
 - אין Request Body, ‏Response Body, נושא או בדיחה בלוגים.
-- 👤 **בדיקת משתמש:** PWA ניתנת להתקנה מהדומיין הציבורי ונפתחת ב-Standalone.
+- 👤 **בדיקת משתמש:** PWA ניתנת להתקנה מהכתובת הציבורית ונפתחת ב-Standalone.
 - קיימת גרסת Production קודמת או דרך מתועדת ומאומתת לביצוע Rollback.
 - תוצאות Smoke Tests והבדיקות התפעוליות מוצגות למשתמש, כולל כל בדיקה שלא ניתן היה להריץ.
 
@@ -271,4 +270,4 @@ Release Candidate מקומי שעונה על דרישות העיצוב, הנגי
 
 - אין Milestone עבור Database, ‏Migrations, ‏Authentication, ‏Analytics, אחסון קבצים או Offline Support, משום שרכיבים אלה מחוץ לטווח.
 - אין Milestone לפיצ'רים כגון שיתוף, העתקה, מועדפים, דירוג או היסטוריה.
-- שינוי מדיניות השימוש, הוספת Rate Limit גלוי או שינוי מודל התמחור מחייבים עדכון של מסמכי המוצר לפני פיתוחם.
+- שינוי מדיניות השימוש, שינוי סף ה-Rate Limit או שינוי מודל התמחור מחייבים עדכון של מסמכי המוצר לפני פיתוחם.

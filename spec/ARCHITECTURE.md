@@ -35,7 +35,7 @@
 | Source Control | Git ו-GitHub | ניהול קוד, היסטוריה ובקרת שינויים. עבודה ישירה על ענף `main` |
 | CI | GitHub Actions | הרצת Lint, בדיקת TypeScript, בדיקות אוטומטיות ו-Build בכל Push |
 | בדיקות יחידה ורכיבים | Jest ו-React Testing Library | בדיקת Validation, מצבי UI והתנהגות רכיבים מנקודת מבט המשתמש |
-| בדיקות End-to-End | Playwright | בדיקת הזרימות המרכזיות ב-Chromium, WebKit ו-Firefox, כולל תצוגות מובייל |
+| בדיקות End-to-End | Playwright | בדיקת הזרימות המרכזיות ב-Chromium, כולל תצוגות מובייל. Safari נבדק ידנית ב-iPhone |
 | Package Manager | npm עם `package-lock.json` | התקנות עקביות, ללא כלי ניהול נוסף |
 
 ### 1.2 החלטות מרכזיות ונימוקים
@@ -93,14 +93,16 @@ GitHub Pages מתאים ל-Frontend סטטי בלבד. במוצר זה נדרש 
 
 ### 1.3 עלויות צפויות
 
-המחירים הבאים נכונים למועד המחקר, 25 באוקטובר 2026, ויש לבדוק אותם שוב לפני ההשקה:
+המחירים הבאים נכונים למועד המחקר, 25 באוקטובר 2026, ואומתו שוב באותו יום מול דף המודל של OpenAI. יש לבדוק אותם שוב לפני ההשקה:
 
 - `gpt-5.6-terra`: ‏$2 למיליון Input Tokens ו-$12 למיליון Output Tokens.
 - `omni-moderation-latest`: השימוש ב-Moderation Endpoint אינו כרוך בתשלום לפי התיעוד הרשמי.
-- Vercel Pro: ‏$20 לחודש, כולל $20 Usage Credit, לפני מסים ושימוש נוסף.
+- Vercel Hobby: חינם. זו התוכנית שנבחרה.
 - דומיין מותאם אישית: עלות נפרדת בהתאם לספק ולסיומת.
 
-עבור מוצר ציבורי או עסקי יש להשתמש ב-Vercel Pro. תוכנית Hobby מתאימה רק לפרויקט אישי ולא מסחרי ועלולה להיעצר כאשר עוברים את המכסה הכלולה.
+המוצר הוא פרויקט אישי ולא מסחרי, ולכן נבחרה תוכנית Hobby. כאשר עוברים את המכסה החינמית, Vercel עוצרת את האתר עד תחילת החודש הבא, בלי חיוב. אם המוצר יהפוך למסחרי, יש לעבור ל-Vercel Pro (‏$20 לחודש).
+
+כתובת האתר תהיה הכתובת החינמית ש-Vercel מספקת (`<project>.vercel.app`). אין צורך בדומיין קנוי. אפשר להוסיף דומיין בהמשך.
 
 עלות OpenAI תלויה באורך ה-Prompt, בנושא ובבדיחה. לצורך המחשה בלבד, בקשה הכוללת 500 Input Tokens ו-100 Output Tokens תעלה בקירוב $0.0022, לפני הבדלים בפועל. Moderation אינו נכלל בחישוב משום שהוא חינמי לפי המחירון הנוכחי.
 
@@ -108,13 +110,13 @@ GitHub Pages מתאים ל-Frontend סטטי בלבד. במוצר זה נדרש 
 
 | סיכון או מגבלה | משמעות | מענה מתוכנן |
 |---|---|---|
-| שירות ציבורי ללא Login וללא מגבלת שימוש למשתמש | אפשרות לניצול לרעה ולעלויות OpenAI בלתי צפויות | Vercel Bot Protection, DDoS Protection, OpenAI Project נפרד, Hard Spend Limit והתראות תקציב. אין להוסיף מכסה גלויה למשתמש ללא שינוי PRD |
+| שירות ציבורי ללא Login וללא מגבלת שימוש למשתמש | אפשרות לניצול לרעה ולעלויות OpenAI בלתי צפויות | Rate Limit ב-Vercel Firewall (20 בקשות בדקה לכל IP), DDoS Protection, Hard Spend Limit והתראות תקציב |
 | AI הוא שירות חיצוני והסתברותי | ייתכנו שגיאות, Latency או תוכן לא מתאים | Prompt קשיח, Input Moderation, Output Moderation, Timeout, טיפול בשגיאות וכפתור "נסו שוב" |
 | `gpt-5.6-terra` עשוי להשתנות או לצאת משימוש בעתיד | צורך בהחלפת מודל | Model ID נשמר ב-Environment Variable ומבודד מאחורי Adapter פנימי |
 | Vercel Functions הן Serverless | Cold Start ומגבלות Runtime אפשריות | פונקציה יחידה וקלה, Node.js Runtime, Timeout קצר וללא תלויות כבדות |
 | אין Database | אין היסטוריה, התאמה אישית או Audit של תוכן | תואם ל-PRD. כל בקשה עצמאית וזמנית |
 | `store: false` אינו מבטל בהכרח Abuse Monitoring של הספק | OpenAI עשויה לשמור Abuse Monitoring Logs עד 30 יום בחשבון רגיל | תיעוד מפורש, הימנעות ממידע אישי, ובחינת Zero Data Retention אם תהיה דרישת פרטיות מחמירה יותר |
-| אין Rate Limit אפליקטיבי | Bot Protection אינו מבטיח חסימת כל שימוש חריג | Hard Spend Limit ב-OpenAI ומעקב עלויות. שינוי למדיניות Rate Limit יחייב עדכון דרישת המוצר |
+| Rate Limit לפי IP אינו חוסם ניצול מכתובות רבות | שימוש חריג מבוזר עדיין אפשרי | Hard Spend Limit ב-OpenAI ומעקב עלויות |
 
 ## 2. ארכיטקטורת המערכת
 
@@ -177,7 +179,7 @@ POST /api/jokes
 אחריות ה-Backend:
 
 - קבלת בקשות JSON בלבד.
-- בדיקת Origin והגבלת שימוש ל-Same Origin.
+- בדיקת Origin והגבלת שימוש ל-Same Origin: ה-Host שבכותרת `Origin` חייב להיות זהה ל-Host שאליו נשלחה הבקשה. כך הבדיקה עובדת בכל כתובת (Localhost, כתובת Vercel או דומיין) בלי רשימת כתובות קבועה. זו הגנה מפני שימוש מאתרים אחרים בדפדפן, ולא מפני סקריפטים, שיכולים לזייף את הכותרת.
 - אימות הקלט מחדש, גם אם כבר נבדק ב-Frontend.
 - Normalization, ‏Trim וספירת עד 50 תווים נראים למשתמש.
 - בדיקת הנושא ב-Moderation API כאשר הוזן נושא.
@@ -335,9 +337,9 @@ Cache-Control: no-store
 - `store: false`.
 - ללא Conversation וללא שמירת State.
 - `reasoning.effort: none`, משום שהמשימה קצרה ואינה דורשת Reasoning מורכב.
-- `text.verbosity: low`.
+- `text.verbosity: low`, אם המודל תומך בו. דף המודל אינו מזכיר את הפרמטר, ולכן יש לוודא זאת בבדיקה הראשונה מול OpenAI ולהסיר אותו אם הוא נדחה.
 - Structured Output עם השדות `status` ו-`joke`.
-- מגבלת Output קטנה ומפורשת כדי לצמצם Latency ועלות.
+- `max_output_tokens: 300`, כדי לצמצם Latency ועלות. עברית צורכת יותר Tokens מאנגלית, והמגבלה משאירה מקום לבדיחה של כמה משפטים.
 - ללא Tools, ‏Web Search, ‏File Search או Function Calling.
 
 #### Moderation
@@ -378,7 +380,19 @@ Cache-Control: no-store
 
 במקרה של שגיאה הניתנת לניסיון חוזר, ה-Frontend יציג הודעה בעברית ואת הכפתור "נסו שוב". לחיצה עליו שולחת מחדש את אותה בקשה פעם אחת לפי פעולת המשתמש. אין Retry אינסופי ב-Frontend.
 
-ב-Backend מותר Retry אוטומטי יחיד רק עבור שגיאת רשת או שגיאת 5xx זמנית. אין לבצע Retry עבור Validation, ‏Moderation, ‏429 או שגיאת תקציב.
+ב-Backend מותר Retry אוטומטי יחיד רק עבור שגיאת רשת או שגיאת 5xx זמנית, ורק אם נשארו לפחות 12 שניות מתקציב הזמן של הבקשה. אין לבצע Retry עבור Validation, ‏Moderation, ‏429 או שגיאת תקציב.
+
+#### תקציב זמנים
+
+| שלב | זמן מרבי |
+|---|---|
+| Input Moderation | 5 שניות |
+| יצירת הבדיחה (כל ניסיון) | 10 שניות |
+| Output Moderation | 5 שניות |
+| כל הבקשה בשרת (`maxDuration` של הפונקציה) | 30 שניות |
+| המתנה בדפדפן עד שמוצגת שגיאה | 32 שניות |
+
+חריגה מזמן של שלב מחזירה `AI_UNAVAILABLE`. המתנה בדפדפן שעברה את המגבלה מוצגת כמו `AI_UNAVAILABLE`.
 
 ### 2.8 PWA
 
@@ -404,18 +418,16 @@ Cache-Control: no-store
 
 | משתנה | Development מקומי | Vercel Preview | Vercel Production |
 |---|---|---|---|
-| `OPENAI_API_KEY` | מפתח של OpenAI Project לפיתוח בתוך `.env` | לא בשימוש (ראו 5.3) | מפתח Production נפרד |
+| `OPENAI_API_KEY` | המפתח של OpenAI Project היחיד, בתוך `.env` | לא בשימוש (ראו 5.3) | אותו מפתח, מוגדר ב-Vercel |
 | `OPENAI_MODEL` | `gpt-5.6-terra` | לא בשימוש | `gpt-5.6-terra` |
-| `APP_ORIGIN` | כתובת Localhost מאושרת | לא בשימוש | הדומיין הציבורי |
 
 כללים:
 
 - `.env` ייכלל ב-`.gitignore`.
 - אין להשתמש בקידומת `NEXT_PUBLIC_` עבור Secret כלשהו.
-- מפתח Production יוגדר רק ב-Vercel Production Environment.
-- Preview Deployments לא יקבלו את מפתח Production.
+- ב-Vercel המפתח יוגדר רק ב-Production Environment.
 - CI יבצע Tests עם Mock ולא יקבל OpenAI API Key אמיתי.
-- מומלץ ליצור OpenAI Projects נפרדים ל-Development ול-Production, עם Keys, Spend Limits והרשאות נפרדים.
+- נעשה שימוש ב-OpenAI Project יחיד ובמפתח יחיד לפיתוח ול-Production. השימוש בפיתוח נספר באותה תקרת הוצאות. אם המפתח נחשף, מחליפים אותו גם ב-`.env` וגם ב-Vercel.
 - יש לבצע Rotation מיד אם מפתח נחשף או נכלל בטעות ב-Commit.
 
 ### 3.2 הגנת ה-API
@@ -430,9 +442,12 @@ Cache-Control: no-store
 - כל תשובות ה-API מסומנות `no-store`.
 - יש להגדיר Security Headers: ‏Content-Security-Policy, ‏X-Content-Type-Options, ‏Referrer-Policy, ‏Permissions-Policy ו-Frame-Ancestors.
 - Vercel DDoS Protection נשאר פעיל.
-- יש להפעיל Vercel Bot Protection על נתיב `/api/jokes` במצב Challenge, לאחר בדיקה שאינו פוגע בנגישות ובדפדפנים לגיטימיים.
+- יש להגדיר כלל Rate Limit ב-Vercel Firewall על `POST /api/jokes`: עד 20 בקשות בדקה לכל כתובת IP, ומעבר לכך תשובת 429. הכלל מוגדר בלוח הבקרה של Vercel, ללא קוד, וללא שמירת IP באפליקציה. יש לוודא שהכלל זמין בתוכנית Vercel שנבחרה.
+- בתוכנית Hobby מותר כלל Rate Limit אחד לכל פרויקט, בשיטת Fixed Window. אם הפעולה 429 אינה זמינה בתוכנית, יש לבחור Deny (תשובת 403).
+- תשובות ה-Firewall אינן בפורמט ה-JSON של האפליקציה. ה-Frontend יתייחס לכל תשובת 429, ולכל 403 שאינה בפורמט האפליקציה, כאל `AI_RATE_LIMITED`.
+- אין להפעיל Bot Protection במצב Challenge על `/api/jokes`. Challenge מיועד לדפים, ועלול לחסום את הבקשות שהדף שולח ברקע.
 
-Bot Protection אינו נחשב למכסת שימוש למשתמש ואינו משנה את החלטת ה-PRD שלא להציג Rate Limit. אם בעתיד יהיה צורך ב-Rate Limit אפליקטיבי, יש לעדכן קודם את דרישות המוצר והפרטיות.
+ה-Rate Limit הוא הגנה נגד ניצול שאושרה ב-PRD, ולא מכסת שימוש גלויה. שינוי של הסף מחייב עדכון ה-PRD.
 
 ### 3.3 פרטיות ושמירת מידע
 
@@ -454,12 +469,14 @@ Bot Protection אינו נחשב למכסת שימוש למשתמש ואינו �
 
 מכיוון שהמוצר פתוח וללא Login או מכסה למשתמש:
 
-- יש ליצור OpenAI Project ייעודי ל-Production.
+- יש ליצור OpenAI Project ייעודי לאפליקציה, נפרד משימושים אחרים בחשבון.
 - יש להגביל את Project לשימוש רק במודלים הנדרשים.
 - יש להגדיר Monthly Hard Spend Limit בסכום עסקי שיאושר לפני ההשקה.
 - יש להגדיר Alerts ב-50%, ‏80% ו-100% מהתקציב.
-- יש להפעיל Vercel Spend Management והתראות שימוש.
+- בתוכנית Hobby אין חיוב על חריגה: האתר נעצר עד החודש הבא. יש לעקוב אחרי השימוש בלוח הבקרה של Vercel.
 - יש לעקוב אחרי חריגות באמצעות Dashboards של הספקים, בלי להוסיף Analytics למוצר.
+
+לפי התיעוד של OpenAI, תקרה קשיחה מוגדרת ב-Project Settings ← Limits ← Spend, ולאחר שהיא מתמלאת OpenAI מחזירה שגיאה 429 עם הקוד `project_spend_limit_exceeded`. דיווחים בקהילה מ-2026 מצביעים על כך שהאכיפה לא תמיד מיידית, ושבחלק מהחשבונות מופיעות רק התראות. לכן, בעת ההגדרה יש לוודא שהאפשרות לאכוף תקרה קשיחה קיימת בחשבון, ולא להסתמך על התקרה כגבול כספי מדויק. השגיאה הזו ממופה ל-`AI_RATE_LIMITED`.
 
 Hard Spend Limit הוא אמצעי תשתיתי ולא מכסת משתמש. כאשר הוא מגיע לתקרה, יצירת בדיחות תיכשל באופן זמני והמשתמש יקבל הודעת שירות כללית. האכיפה עשויה להתעכב מעט ולכן העלות בפועל עלולה לחרוג במעט מהסכום שהוגדר.
 
@@ -491,7 +508,7 @@ Hard Spend Limit הוא אמצעי תשתיתי ולא מכסת משתמש. כא
 - Firefox.
 - תצוגות מובייל החל מרוחב 320 CSS Pixels, טאבלט ו-Desktop.
 
-Next.js 16 תומך כברירת מחדל ב-Chrome 111+, ‏Edge 111+, ‏Firefox 111+ ו-Safari 16.4+. אין צורך בגרסה ייעודית לכל פלטפורמה.
+Next.js 16 תומך כברירת מחדל ב-Chrome 111+, ‏Edge 111+, ‏Firefox 111+ ו-Safari 16.4+. ספירת התווים משתמשת ב-`Intl.Segmenter`, שנתמך ב-Firefox רק מגרסה 125, ולכן גרסת המינימום של Firefox היא 125. אין צורך בגרסה ייעודית לכל פלטפורמה.
 
 ## 5. תשתיות, GitHub ו-Deployment
 
@@ -524,7 +541,7 @@ CI משמש כבדיקה נוספת לאחר הדחיפה ואינו חוסם א
 #### Development
 
 - הרצה מקומית באמצעות `npm run dev`.
-- שימוש ב-OpenAI Development Project ובמפתח Development בלבד.
+- שימוש במפתח של OpenAI Project היחיד.
 - Secrets נשמרים ב-`.env` שאינו נשלח ל-GitHub.
 
 #### Preview
@@ -536,15 +553,15 @@ CI משמש כבדיקה נוספת לאחר הדחיפה ואינו חוסם א
 #### Production
 
 - Push ל-`main` מפעיל Build ו-Production Deployment אוטומטיים.
-- Production משתמש ב-OpenAI Production Project ובמפתח Production בלבד.
-- הדומיין הציבורי מחובר ל-Production Deployment.
+- Production משתמש באותו OpenAI Project ובאותו מפתח, המוגדרים ב-Vercel.
+- הכתובת הציבורית היא כתובת ה-`vercel.app` של הפרויקט.
 - Vercel מספקת HTTPS ו-CDN לנכסים הסטטיים.
 - ה-Route Handler נפרס כ-Vercel Function ב-Node.js Runtime.
 
 ### 5.4 Runtime Configuration
 
 - Node.js 24 LTS יוגדר באופן עקבי בפיתוח, ב-CI וב-Vercel.
-- הפונקציה תוגדר עם Timeout קצר המתאים לקריאת AI, למשל 20 שניות, ולא עם ברירת מחדל ארוכה.
+- הפונקציה תוגדר עם `maxDuration` של 30 שניות, לפי טבלת תקציב הזמנים בסעיף 2.7.
 - ה-Frontend הסטטי יוגש דרך ה-CDN הגלובלי.
 - ה-Backend יופעל באזור Vercel יחיד. ברירת המחדל המומלצת לקהל עברי היא Frankfurt, בכפוף לבדיקת Latency בפועל לפני השקה.
 - אין צורך ב-Multi-region, Edge Runtime או Durable Compute.
@@ -609,14 +626,14 @@ Playwright יריץ את הזרימות המרכזיות עם API מדומה:
 - ניסיון נוסף לאחר שגיאה.
 - השדה אינו מקבל הקלדה או הדבקה מעבר ל-50 תווים.
 - תצוגת RTL ורספונסיביות במובייל וב-Desktop.
-- Chromium, ‏WebKit ו-Firefox.
+- Chromium בלבד. Safari נבדק ידנית ב-iPhone (בדיקת משתמש).
 - בדיקת Manifest ואפשרות התקנה ברמת Metadata.
 
 בנוסף יש לבצע בדיקה ידנית במכשיר iPhone ובמכשיר Android להתקנה במסך הבית ולפתיחה במצב `standalone`.
 
 ### 6.5 בדיקות מול OpenAI אמיתי
 
-בדיקות Smoke מצומצמות מול OpenAI Development Project יבוצעו ידנית לפני השקה ולא בכל CI Run. הן יכללו נושאים תקינים, נושא ריק, נושאים חסומים ודוגמאות עברית. אין לשמור את הפלטים בלוגים או כ-Test Artifacts.
+בדיקות Smoke מצומצמות מול OpenAI יבוצעו ידנית לפני השקה ולא בכל CI Run. הן יכללו נושאים תקינים, נושא ריק, נושאים חסומים ודוגמאות עברית. אין לשמור את הפלטים בלוגים או כ-Test Artifacts.
 
 ## 7. החלטות שאינן נדרשות במוצר זה
 
