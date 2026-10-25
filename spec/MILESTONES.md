@@ -75,7 +75,7 @@
 
 ### מה יש לממש
 
-- הדרכה צעד אחר צעד למשתמש ליצירת OpenAI Project ייעודי לאפליקציה, להפקת API Key ולהגדרת תקרת הוצאות. אותו Project ומפתח ישמשו גם ב-Production.
+- הדרכה צעד אחר צעד למשתמש ליצירת OpenAI Project ייעודי לאפליקציה, ולהפקת API Key. אותו Project ומפתח ישמשו גם ב-Production.
 - שמירת `OPENAI_API_KEY` ב-`.env` בלבד והגדרת `OPENAI_MODEL` ללא חשיפתם ל-Frontend.
 - מימוש `POST /api/jokes` כ-Next.js Route Handler ב-Node.js Runtime.
 - הגדרת `JokeRequest`, ‏`JokeSuccessResponse` ו-`JokeErrorResponse` באמצעות Zod.
@@ -226,7 +226,7 @@ Release Candidate מקומי שעונה על דרישות העיצוב, הנגי
 
 **פריסה אוטומטית, הפרדת סביבות והגנות תפעוליות.**
 
-מטרת אבן הדרך היא לפרוס את המוצר ל-Vercel דרך GitHub, ולהעלות Production עם Secrets נפרדים, הגנת שימוש ועלויות ויכולת Rollback.
+מטרת אבן הדרך היא לפרוס את המוצר ל-Vercel דרך GitHub, ולהעלות Production עם Secrets נפרדים ויכולת Rollback. לבחירת המשתמש, ללא Rate Limit וללא תקרת הוצאות (ADR-8, ‏ADR-9).
 
 ### מה יש לממש
 
@@ -235,9 +235,7 @@ Release Candidate מקומי שעונה על דרישות העיצוב, הנגי
 - הדרכה צעד אחר צעד למשתמש להגדרת:
   - הגדרת אותו OpenAI API Key שמשמש בפיתוח.
   - `OPENAI_API_KEY` ו-`OPENAI_MODEL` ב-Vercel Production בלבד.
-  - OpenAI Hard Spend Limit והתראות ב-50%, ‏80% ו-100%, בסכום שיאושר על ידי המשתמש.
 - הגדרת הכתובת הציבורית.
-- 👤 **בדיקת משתמש:** הגדרת כלל Rate Limit ב-Vercel Firewall (20 בקשות בדקה לכל IP על `POST /api/jokes`), לפי הדרכה צעד אחר צעד.
 - שמירת Vercel DDoS Protection פעילה.
 - Push ל-`main`, לאחר אישור המשתמש, מפעיל Production Deployment אוטומטי.
 - Smoke Tests מצומצמים ב-Production עבור נושא תקין, נושא ריק, שגיאה ניתנת לניסיון חוזר והתקנת PWA.
@@ -246,7 +244,7 @@ Release Candidate מקומי שעונה על דרישות העיצוב, הנגי
 
 ### תוצר מצופה
 
-אפליקציית Production ציבורית ב-HTTPS, המתעדכנת אוטומטית לאחר Push מאושר ל-`main`, עם Secrets מופרדים, בקרת עלויות והגנות תפעוליות.
+אפליקציית Production ציבורית ב-HTTPS, המתעדכנת אוטומטית לאחר Push מאושר ל-`main`, עם Secrets מופרדים והגנות תפעוליות. לבחירת המשתמש, אין תקרת הוצאות ב-OpenAI (ADR-8).
 
 ### Definition of Done
 
@@ -256,8 +254,7 @@ Release Candidate מקומי שעונה על דרישות העיצוב, הנגי
 - כתובת ה-`vercel.app` פועלת ב-HTTPS והאפליקציה נטענת בעברית וב-RTL.
 - יצירת בדיחה בנושא ויצירת בדיחה כללית עובדות ב-Production.
 - טיפול בשגיאות, "נסו שוב", Moderation ומניעת שליחה כפולה עובדים ב-Production.
-- 👤 **בדיקת משתמש:** Hard Spend Limit והתראות OpenAI הוגדרו בסכום שאושר.
-- כלל ה-Rate Limit ו-DDoS Protection פעילים. בקשה ה-21 בדקה מקבלת 429, והממשק מציג את הודעת השירות הכללית.
+- DDoS Protection פעיל. לבחירת המשתמש, אין כלל Rate Limit (ADR-9).
 - Vercel Web Analytics ו-Speed Insights אינם פעילים.
 - אין Request Body, ‏Response Body, נושא או בדיחה בלוגים.
 - 👤 **בדיקת משתמש:** PWA ניתנת להתקנה מהכתובת הציבורית ונפתחת ב-Standalone ב-iPhone וב-Android, לפי רשימת צעדים שה-AI יכין (הועבר מ-Milestone 4).
@@ -270,4 +267,4 @@ Release Candidate מקומי שעונה על דרישות העיצוב, הנגי
 
 - אין Milestone עבור Database, ‏Migrations, ‏Authentication, ‏Analytics, אחסון קבצים או Offline Support, משום שרכיבים אלה מחוץ לטווח.
 - אין Milestone לפיצ'רים כגון שיתוף, העתקה, מועדפים, דירוג או היסטוריה.
-- שינוי מדיניות השימוש, שינוי סף ה-Rate Limit או שינוי מודל התמחור מחייבים עדכון של מסמכי המוצר לפני פיתוחם.
+- שינוי מדיניות השימוש, הוספת Rate Limit או שינוי מודל התמחור מחייבים עדכון של מסמכי המוצר לפני פיתוחם.

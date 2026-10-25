@@ -58,4 +58,5 @@
 ## פקודות הרצה
 > Claude ממלא זאת ברגע שהאפליקציה יכולה לרוץ (בדרך כלל בסיום Milestone 1), ומעדכן אם משהו משתנה.
 - **הרצה (dev):** `npm run dev` (נפתח ב-http://localhost:3000)
+- **Production:** https://jokes-two-cyan.vercel.app (נפרס אוטומטית מכל Push ל-`main`)
 - **בדיקות (test):** `npm test` (בנוסף: `npm run lint`, `npm run typecheck`, `npm run build`, ובדיקות דפדפן: `npm run test:e2e`)
